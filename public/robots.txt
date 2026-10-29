@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /inventory
+Sitemap: https://roomtally.top/sitemap.xml

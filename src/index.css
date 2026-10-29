@@ -1,0 +1,104 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Instrument Serif', ui-serif, Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  --color-paper: #fbfaf7;
+  --color-stone-50: #f7f5f0;
+  --color-stone-100: #efece5;
+  --color-stone-200: #e3dfd6;
+  --color-stone-300: #cfc9bd;
+  --color-stone-400: #a8a194;
+  --color-stone-500: #7c766b;
+  --color-ink: #1d1d1b;
+  --color-ink-soft: #3d3c38;
+  --color-muted: #6b675f;
+  --color-line: #dedad1;
+  --color-cobalt: #2747b8;
+  --color-cobalt-dark: #1c348a;
+  --color-cobalt-50: #eef1fb;
+  --color-teal: #1f5f5b;
+  --color-teal-50: #e8f1ef;
+  --color-amber: #9a6a12;
+  --color-amber-50: #f8f0de;
+  --color-rust: #9b3b26;
+  --color-rust-50: #f7e8e3;
+  --color-navy: #1f2a44;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-paper text-ink font-sans;
+  }
+  ::selection {
+    background: #d8defa;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-cobalt);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-[1240px] px-5 sm:px-8;
+  }
+  .eyebrow {
+    @apply font-mono text-[11px] tracking-[0.14em] uppercase text-muted;
+  }
+  .display {
+    @apply font-serif font-normal tracking-[-0.01em] leading-[1.02];
+  }
+  .btn,
+  .btn-primary,
+  .btn-accent,
+  .btn-secondary,
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 h-10 text-sm font-medium border transition-colors whitespace-nowrap cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply bg-ink text-paper border-ink hover:bg-ink-soft;
+  }
+  .btn-accent {
+    @apply bg-cobalt text-white border-cobalt hover:bg-cobalt-dark;
+  }
+  .btn-secondary {
+    @apply bg-transparent text-ink border-line hover:border-ink;
+  }
+  .btn-ghost {
+    @apply border-transparent text-ink-soft hover:bg-stone-100;
+  }
+  .btn-sm {
+    @apply h-8 px-3 text-[13px];
+  }
+  .field-label {
+    @apply block text-[12px] font-medium text-ink-soft mb-1.5;
+  }
+  .field {
+    @apply w-full h-10 px-3 bg-white border border-line text-sm text-ink placeholder:text-stone-400 focus:border-cobalt focus:outline-none focus:ring-2 focus:ring-cobalt/15;
+  }
+  textarea.field {
+    @apply h-auto py-2;
+  }
+  .hairline {
+    @apply border-line;
+  }
+  .panel {
+    @apply relative bg-white border border-line;
+  }
+  .tag {
+    @apply inline-flex items-center gap-1 h-6 px-2 text-[11.5px] font-medium border whitespace-nowrap;
+  }
+  .grid-paper {
+    background-image:
+      linear-gradient(to right, rgba(29, 29, 27, 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(29, 29, 27, 0.045) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+}
