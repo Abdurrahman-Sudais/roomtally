@@ -2,11 +2,13 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AlertTriangle, ArrowRight, Building2, Download, Plus, RotateCcw } from 'lucide-react';
 import { FloorPlan } from '../components/FloorPlan';
-import { actionTone, ActionTag, Field, Modal, SampleBadge, StatusTag, Toast } from '../components/ui';
+import { actionTone, ActionTag, Field, Modal, RoleNote, SampleBadge, StatusTag, Toast } from '../components/ui';
+import { ROLE_LABEL } from '../lib/access';
 import { ACTION_LABEL, ACTIONS, CATEGORIES, CONDITION_LABEL, CONDITIONS, type InventoryItem, type Room } from '../data/types';
 import { downloadCsv, inventoryToCsv } from '../lib/csv';
 import { qty, useInventory } from '../store/InventoryContext';
 import { PageTitle } from './AppLayout';
+import { AssistantPanel } from './AssistantPanel';
 import { blankItem, ItemEditor } from './ItemEditor';
 
 /* ---------------- Overview ---------------- */
@@ -49,6 +51,7 @@ export function OverviewPage() {
           </div>
         ))}
       </div>
+      <div className="mb-6"><AssistantPanel /></div>
 
       {pendingDup.length > 0 && (
         <div className="mb-6 flex flex-col gap-3 border border-amber/30 bg-amber-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
@@ -165,7 +168,7 @@ export function PropertiesPage() {
 /* ---------------- Rooms ---------------- */
 
 export function RoomsPage() {
-  const { state, dispatch, nextItemId } = useInventory();
+  const { state, dispatch, nextItemId, can } = useInventory();
   const [property, setProperty] = useState(() => new URLSearchParams(location.search).get('property') ?? 'meridian');
   const [selected, setSelected] = useState<string | null>(null);
   const [roomDraft, setRoomDraft] = useState<Room | null>(null);
@@ -203,7 +206,7 @@ export function RoomsPage() {
             <select id="rooms-prop" className="field !w-auto" value={property} onChange={(e) => { setProperty(e.target.value); setSelected(null); }}>
               {state.properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
-            <button className="btn-primary" onClick={newRoom}><Plus size={15} /> Add room</button>
+            <button className="btn-primary" disabled={!can('rooms')} onClick={newRoom}><Plus size={15} /> Add room</button>
           </>
         }
       />
@@ -240,8 +243,8 @@ export function RoomsPage() {
               <h2 id="room-detail" className="text-[17px] font-semibold">{sel.name}</h2>
             </div>
             <div className="flex gap-2">
-              <button className="btn-secondary btn-sm" onClick={() => { setRoomErr(''); setRoomDraft(sel); }}>Edit room</button>
-              <button className="btn-secondary btn-sm" onClick={() => setNewItem(blankItem(nextItemId(), property, sel.id))}><Plus size={13} /> Add item here</button>
+              <button className="btn-secondary btn-sm" disabled={!can('rooms')} onClick={() => { setRoomErr(''); setRoomDraft(sel); }}>Edit room</button>
+              <button className="btn-secondary btn-sm" disabled={!can('items')} onClick={() => setNewItem(blankItem(nextItemId(), property, sel.id))}><Plus size={13} /> Add item here</button>
               <Link to={`/inventory/items?room=${sel.id}`} className="btn-primary btn-sm">Open in inventory</Link>
             </div>
           </div>
@@ -381,7 +384,7 @@ export function ReportsPage() {
 /* ---------------- Settings ---------------- */
 
 export function SettingsPage() {
-  const { state, dispatch } = useInventory();
+  const { state, dispatch, can, user } = useInventory();
   const [confirmReset, setConfirmReset] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const s = state.settings;
@@ -391,11 +394,12 @@ export function SettingsPage() {
       <div className="max-w-2xl space-y-6">
         <section className="panel space-y-4 p-5">
           <h2 className="text-[14px] font-semibold">Workspace</h2>
+          {!can('settings') && <RoleNote>Acting as {ROLE_LABEL[user.role].toLowerCase()}: only a facilities manager can change organisation settings.</RoleNote>}
           <Field label="Organisation name" htmlFor="st-org">
-            <input id="st-org" className="field" value={s.organisation} onChange={(e) => dispatch({ type: 'settings', patch: { organisation: e.target.value } })} />
+            <input id="st-org" className="field disabled:opacity-60" disabled={!can('settings')} value={s.organisation} onChange={(e) => dispatch({ type: 'settings', patch: { organisation: e.target.value } })} />
           </Field>
           <Field label="Default dimension unit" htmlFor="st-unit" hint="Used when recording new dimensions. Existing records keep their stated unit.">
-            <select id="st-unit" className="field" value={s.defaultUnit} onChange={(e) => dispatch({ type: 'settings', patch: { defaultUnit: e.target.value as 'cm' | 'mm' } })} aria-describedby="st-unit-hint">
+            <select id="st-unit" className="field disabled:opacity-60" disabled={!can('settings')} value={s.defaultUnit} onChange={(e) => dispatch({ type: 'settings', patch: { defaultUnit: e.target.value as 'cm' | 'mm' } })} aria-describedby="st-unit-hint">
               <option value="cm">Centimetres (cm)</option>
               <option value="mm">Millimetres (mm)</option>
             </select>

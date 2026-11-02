@@ -13,7 +13,7 @@ const RESOLUTION_COPY: Record<Exclude<DuplicateGroup['resolution'], 'pending'>, 
 };
 
 export default function DuplicatesPage() {
-  const { state, dispatch, roomById } = useInventory();
+  const { state, dispatch, roomById, can } = useInventory();
   const [toast, setToast] = useState<string | null>(null);
   const [pendingChoice, setPendingChoice] = useState<Record<string, 'same' | 'separate' | 'inspection' | ''>>({});
 
@@ -146,7 +146,8 @@ export default function DuplicatesPage() {
                   </div>
                   <button
                     className="btn-primary mt-4 w-full"
-                    disabled={!choice}
+                    disabled={!choice || !can('duplicates')}
+                    title={can('duplicates') ? undefined : 'Your role cannot resolve duplicate reviews'}
                     onClick={() => {
                       if (!choice) return;
                       dispatch({ type: 'resolveDuplicate', groupId: g.id, resolution: choice });
@@ -164,7 +165,7 @@ export default function DuplicatesPage() {
                   {g.resolvedAt && <p className="mt-2 text-[11.5px] text-muted">Applied {new Date(g.resolvedAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}</p>}
                   <div className="mt-4 flex flex-wrap gap-2">
                     <Link to="/inventory/items?category=Desk" className="btn-secondary btn-sm">View desks in inventory</Link>
-                    <button className="btn-ghost btn-sm" onClick={() => { dispatch({ type: 'revertDuplicate', groupId: g.id }); setToast(`${g.id} reopened for review`); }}>
+                    <button className="btn-ghost btn-sm" disabled={!can('duplicates')} onClick={() => { dispatch({ type: 'revertDuplicate', groupId: g.id }); setToast(`${g.id} reopened for review`); }}>
                       <RotateCcw size={13} /> Undo decision
                     </button>
                   </div>

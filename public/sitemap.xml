@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://roomtally.top/</loc></url>
-  <url><loc>https://roomtally.top/product</loc></url>
-  <url><loc>https://roomtally.top/inventory-management</loc></url>
-  <url><loc>https://roomtally.top/relocation-planning</loc></url>
-  <url><loc>https://roomtally.top/how-it-works</loc></url>
-  <url><loc>https://roomtally.top/pricing</loc></url>
-  <url><loc>https://roomtally.top/about</loc></url>
-  <url><loc>https://roomtally.top/contact</loc></url>
+  <url><loc>https://roomtally.top/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://roomtally.top/product</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://roomtally.top/inventory-management</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://roomtally.top/relocation-planning</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://roomtally.top/how-it-works</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://roomtally.top/pricing</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://roomtally.top/about</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://roomtally.top/contact</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://roomtally.top/technology</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://roomtally.top/security</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://roomtally.top/privacy</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://roomtally.top/terms</loc><lastmod>2026-11-02</lastmod></url>
 </urlset>

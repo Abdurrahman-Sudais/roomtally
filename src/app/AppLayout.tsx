@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
-  Building2, ClipboardList, Copy, FileBarChart, KanbanSquare, LayoutDashboard, LayoutGrid, Menu, Settings, X,
+  Building2, ClipboardList, Copy, FileBarChart, KanbanSquare, LayoutDashboard, LayoutGrid, Lock, Menu, Settings, X,
 } from 'lucide-react';
-import { LogoMark } from '../components/ui';
+import { LogoMark, RoleNote } from '../components/ui';
+import { DEMO_USERS, ROLE_LABEL } from '../lib/access';
 import { useInventory } from '../store/InventoryContext';
 
 const SECTIONS = [
@@ -14,11 +15,12 @@ const SECTIONS = [
   { to: '/inventory/duplicates', label: 'Duplicate Review', icon: Copy, badge: true },
   { to: '/inventory/plan', label: 'Relocation Plan', icon: KanbanSquare },
   { to: '/inventory/reports', label: 'Reports', icon: FileBarChart },
+  { to: '/inventory/audit', label: 'Audit & roles', icon: Lock },
   { to: '/inventory/settings', label: 'Settings', icon: Settings },
 ];
 
 export function AppLayout() {
-  const { state } = useInventory();
+  const { state, user, setUser } = useInventory();
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
   useEffect(() => setOpen(false), [pathname]);
@@ -62,7 +64,14 @@ export function AppLayout() {
 
   const footer = (
     <div className="mt-auto border-t border-line p-4 text-[11.5px] leading-relaxed text-muted">
-      <div className="mb-1 font-medium text-ink-soft">{state.settings.organisation}</div>
+      <label htmlFor="demo-as" className="mb-1.5 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
+        <span className="flex h-5 w-5 items-center justify-center bg-ink text-[9px] text-paper" aria-hidden>{user.initials}</span>
+        Demo as
+      </label>
+      <select id="demo-as" aria-label="Demo as user" className="field !h-9 !text-[12.5px]" value={user.id} onChange={(e) => setUser(e.target.value)}>
+        {DEMO_USERS.map((u) => <option key={u.id} value={u.id}>{u.name} · {ROLE_LABEL[u.role]}</option>)}
+      </select>
+      <div className="mb-1 mt-3 font-medium text-ink-soft">{state.settings.organisation}</div>
       Sample workspace. Edits are saved in this browser only.
     </div>
   );
@@ -101,6 +110,9 @@ export function AppLayout() {
           <Link to="/" className="btn-secondary btn-sm">Website</Link>
         </header>
         <main id="app-main" className="flex-1 px-4 py-6 sm:px-8 sm:py-8">
+          {user.role === 'viewer' && (
+            <div className="mb-5"><RoleNote>Viewing as {user.name} ({ROLE_LABEL[user.role].toLowerCase()}): you can browse and export, but not change records. Switch user under “Demo as”.</RoleNote></div>
+          )}
           <Outlet />
         </main>
       </div>

@@ -1,10 +1,10 @@
-import { Link } from 'react-router-dom';
-import { PageHero } from '../components/SiteLayout';
+import { PageHero, SectionHead } from '../components/SiteLayout';
+import { FoundersGrid, RoadmapSection } from './HomeSections';
 import { Photo, PHOTOS, useSeo } from '../components/ui';
 import { FinalCta } from './Home';
 
 export default function About() {
-  useSeo('About', 'Roomtally was founded by Tunde Ogunleye to make furniture surveys, reuse decisions, and office relocations easier to plan.', '/about');
+  useSeo('About & team', 'Roomtally was founded by Tunde Ogunleye and Yusuf Abdulhamid to make furniture surveys, reuse decisions, and office relocations easier to plan.', '/about');
   return (
     <>
       <PageHero
@@ -14,7 +14,7 @@ export default function About() {
       />
       <section className="border-b border-line">
         <div className="container-x grid gap-12 py-20 lg:grid-cols-[1.1fr_1fr]">
-          <div className="space-y-6 text-[16px] leading-relaxed text-ink-soft">
+          <div className="reveal space-y-6 text-[16px] leading-relaxed text-ink-soft">
             <p>
               Workplace moves are coordinated by many people at once: facilities managers, move coordinators, surveyors, refurbishers, and donation partners. Each keeps their own version of what is in the building. By move day, those versions rarely agree.
             </p>
@@ -28,20 +28,10 @@ export default function About() {
           <Photo src={PHOTOS.interior} alt="Modern workplace interior with mixed furniture" className="aspect-[4/5]" />
         </div>
       </section>
-      <section className="border-b border-line bg-stone-50">
-        <div className="container-x grid gap-10 py-20 md:grid-cols-[180px_1fr]">
-          <div className="eyebrow pt-1">Founder</div>
-          <div className="grid gap-8 sm:grid-cols-[120px_1fr]">
-            <div className="flex h-[120px] w-[120px] items-center justify-center border border-line bg-paper font-serif text-[44px]" aria-hidden="true">TO</div>
-            <div>
-              <h2 className="text-[22px] font-semibold tracking-tight">Tunde Ogunleye</h2>
-              <p className="text-[14px] text-muted">Founder, Roomtally</p>
-              <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-ink-soft">
-                Tunde started Roomtally to bring structure to the part of a workplace transition that is usually handled last and in a hurry: knowing exactly what furniture exists, where it is, and what should happen to it.
-              </p>
-              <a href="mailto:tunde@roomtally.top" className="mt-5 inline-block text-[14px] underline decoration-line underline-offset-4 hover:decoration-ink">tunde@roomtally.top</a>
-            </div>
-          </div>
+      <section id="team" className="border-b border-line bg-stone-50">
+        <div className="container-x py-20">
+          <SectionHead eyebrow="Founding team" title="The people behind Roomtally." />
+          <div className="mt-12 md:ml-[180px]"><FoundersGrid /></div>
         </div>
       </section>
       <section className="border-b border-line">
@@ -51,11 +41,14 @@ export default function About() {
             ['People decide', 'Software proposes and organises. Reviewers confirm.'],
             ['Reuse by default', 'A clear inventory makes reuse and donation the easy path.'],
           ].map(([t, b]) => (
-            <div key={t} className="bg-paper p-8"><h3 className="font-semibold">{t}</h3><p className="mt-2 text-[14px] text-muted">{b}</p></div>
+            <div key={t} className="reveal spot bg-paper p-8"><h3 className="font-semibold">{t}</h3><p className="mt-2 text-[14px] text-muted">{b}</p></div>
           ))}
         </div>
       </section>
-      <div className="container-x py-10 text-[14px]"><Link to="/contact" className="underline underline-offset-4">Get in touch →</Link></div>
+      <section className="border-b border-line"><div className="container-x py-16">
+        <blockquote className="reveal md:ml-[180px]"><p className="eyebrow !text-cobalt">Our mission</p><p className="display mt-3 max-w-3xl text-[36px] sm:text-[44px]">Make reuse the easy path — by knowing exactly what you have.</p></blockquote>
+      </div></section>
+      <RoadmapSection />
       <FinalCta />
     </>
   );

@@ -326,3 +326,13 @@ export function Toast({ message, onDone }: { message: string | null; onDone: () 
     </div>
   );
 }
+
+/** Explains why controls are read-only for the acting demo user. */
+export function RoleNote({ children }: { children: ReactNode }) {
+  return (
+    <p role="note" className="flex items-start gap-1.5 border border-line bg-stone-50 px-3 py-2 text-[12px] text-muted">
+      <span aria-hidden>🔒</span>
+      <span>{children}</span>
+    </p>
+  );
+}

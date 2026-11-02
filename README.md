@@ -5,7 +5,8 @@
 Roomtally is a furniture inventory and reuse-planning platform for office relocations, facilities teams, and commercial furniture refurbishers. This repository holds the marketing site and an interactive product demo, built with Vite, React, TypeScript, Tailwind CSS v4, React Router, and Lucide React.
 
 - Domain: roomtally.top
-- Founder: Tunde Ogunleye, tunde@roomtally.top
+- Founder/CEO: Tunde Ogunleye, tunde@roomtally.top
+- Co-founder/CTO: Yusuf Abdulhamid
 
 ## Setup
 
@@ -16,16 +17,32 @@ npm run build      # type-check + production build to dist/
 npm run preview    # serve the production build
 ```
 
-Requires Node 18+. You don't need any API keys or a backend.
+Requires Node 18+. You don't need any API keys or a backend. `npm test` runs the Vitest unit tests (assistant, roles, home content).
+
+## Deploying
+
+`npm run build` produces a static site in `dist/`. `public/_redirects` + `public/_headers` (Netlify / Cloudflare Pages) and `vercel.json` (Vercel) set the SPA fallback, security headers and long-lived caching for hashed assets. Every route except the home page is lazy-loaded.
+
+Optional: copy `.env.example` to `.env.local` and set the `VITE_HUBSPOT_*` variables so early-access requests reach HubSpot. Without them the form saves requests in the visitor's browser and offers a pre-filled email.
+
+### Content to confirm before launch
+
+- **Founders:** `FOUNDERS` in `src/config/site.ts`.
+- **Industry statistics** (`PROBLEM_STATS` in `src/pages/Home.tsx`) cite an EPA estimate (via CleanTechnica) and the Business Moves survey (via Workplace Insight and its white paper). Check each against its source.
+- **Demo people** (Grace Adeyemi, Owen Hart, Priya Nair, Daniel Kim) are fictional.
+- **Roadmap, pricing, FAQ, privacy notice and terms** are drafts to keep in step with what you offer.
 
 ## Routes
 
 | Path | Page |
 | --- | --- |
-| `/` | Home: hero, dashboard mockup, sections A–G |
-| `/product`, `/inventory-management`, `/relocation-planning`, `/how-it-works`, `/pricing`, `/about`, `/contact` | Marketing pages |
+| `/` | Home: hero, marquee, problem with sourced statistics, what we solve, sections B–F, comparison, AI, safeguards, AWS, pricing, roadmap, team, FAQ, early access |
+| `/product`, `/inventory-management`, `/relocation-planning`, `/how-it-works`, `/pricing` | Marketing pages |
+| `/about` | Founding team, story, mission, principles, roadmap |
+| `/contact` | Early-access form |
+| `/technology`, `/security`, `/privacy`, `/terms` | Proposed AWS architecture; safeguards; review-draft legal pages |
 | `/inventory` | Demo workspace overview for Meridian House |
-| `/inventory/properties` · `/rooms` · `/items` · `/duplicates` · `/plan` · `/reports` · `/settings` | Demo workspace sections |
+| `/inventory/properties` · `/rooms` · `/items` · `/duplicates` · `/plan` · `/reports` · `/audit` · `/settings` | Demo workspace sections |
 
 The app is a single-page app. `public/_redirects` (Netlify) and `vercel.json` route every path to `index.html`.
 
@@ -37,6 +54,8 @@ The app is a single-page app. `public/_redirects` (Netlify) and `vercel.json` ro
 - **Rooms**: a clickable schematic floor plan and a room table, with add and edit room.
 - **Reports**: five CSV exports and summary tables.
 - **Settings**: organisation name, default dimension unit, and "Reset demo data".
+- **Roles and audit**: “Demo as” switches between four fictional people. Every change goes through a permission-checked dispatch (`src/lib/access.ts`, `src/store/InventoryContext.tsx`) and is written to an audit log at `/inventory/audit`.
+- **Assistant** (“Ask about this inventory” on the overview, `src/lib/assistant.ts`): deterministic answers from the demo records, citing the records used; it refuses valuations and estimated dimensions.
 - **Saving edits**: everything is stored in `localStorage` under the key `roomtally.demo.v1`.
 
 ## Simulated integrations and data boundaries
@@ -46,7 +65,7 @@ The app is a single-page app. `public/_redirects` (Netlify) and `vercel.json` ro
 - Dimensions are only ever entered, imported, or measured on site, always with explicit units. Nothing is estimated from photographs.
 - Condition is recorded by the reviewer. The app never determines a resale value.
 - Photograph references are placeholder thumbnails. Editorial photos load from Unsplash, with a fallback if they fail.
-- The contact form validates on the client and does not transmit data. It offers a pre-filled `mailto:` link instead.
+- The early-access form sends to HubSpot when configured; otherwise it saves in the browser and offers a pre-filled `mailto:` link.
 
 ## Configuration
 
