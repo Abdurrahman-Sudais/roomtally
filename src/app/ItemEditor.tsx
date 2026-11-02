@@ -41,7 +41,7 @@ export function ItemEditor({
   onClose: () => void;
   onSaved?: (msg: string) => void;
 }) {
-  const { state, dispatch } = useInventory();
+  const { state, dispatch, can } = useInventory();
   const [d, setD] = useState<InventoryItem | null>(item);
   const [dim, setDim] = useState<DimDraft | null>(item ? toDraft(item, state.settings.defaultUnit) : null);
   const [confirmedStr, setConfirmedStr] = useState('');
@@ -114,11 +114,11 @@ export function ItemEditor({
                 <button className="btn-ghost btn-sm" onClick={() => setConfirmDelete(false)}>Cancel</button>
               </div>
             ) : (
-              <button className="btn-ghost btn-sm mr-auto text-rust" onClick={() => setConfirmDelete(true)}><Trash2 size={14} /> Remove</button>
+              <button className="btn-ghost btn-sm mr-auto text-rust" disabled={!can('delete')} title={can('delete') ? undefined : 'Only a facilities manager can remove records'} onClick={() => setConfirmDelete(true)}><Trash2 size={14} /> Remove</button>
             )
           )}
           <button className="btn-secondary btn-sm" onClick={onClose}>Cancel</button>
-          <button className="btn-primary btn-sm" onClick={save}>{isNew ? 'Add record' : 'Save changes'}</button>
+          <button className="btn-primary btn-sm" disabled={!can('items')} onClick={save}>{isNew ? 'Add record' : 'Save changes'}</button>
         </>
       }
     >

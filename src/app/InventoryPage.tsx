@@ -14,7 +14,7 @@ const FILTER_KEYS = ['property', 'room', 'category', 'condition', 'status', 'act
 type FilterKey = (typeof FILTER_KEYS)[number];
 
 export default function InventoryPage() {
-  const { state, dispatch, roomById, nextItemId } = useInventory();
+  const { state, dispatch, roomById, nextItemId, can } = useInventory();
   const [params, setParams] = useSearchParams();
   const [editing, setEditing] = useState<{ item: InventoryItem; isNew: boolean } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -80,7 +80,7 @@ export default function InventoryPage() {
         actions={
           <>
             <button className="btn-secondary" onClick={exportCsv}><Download size={15} /> Export CSV</button>
-            <button className="btn-primary" onClick={addNew}><Plus size={15} /> Add record</button>
+            <button className="btn-primary" disabled={!can('items')} title={can('items') ? undefined : 'Your role cannot add records'} onClick={addNew}><Plus size={15} /> Add record</button>
           </>
         }
       />
@@ -162,7 +162,7 @@ export default function InventoryPage() {
                     ) : (
                       <button
                         className="btn-sm btn border-line px-2 text-[12px] hover:border-teal hover:text-teal"
-                        disabled={i.status === 'needs-review' && i.observationIds.length > 0}
+                        disabled={!can('items') || (i.status === 'needs-review' && i.observationIds.length > 0)}
                         title={i.status === 'needs-review' && i.observationIds.length > 0 ? 'Resolve duplicate review first' : `Confirm quantity as ${i.proposedQuantity}`}
                         onClick={() => {
                           dispatch({ type: 'updateItem', id: i.id, patch: { confirmedQuantity: i.proposedQuantity, status: 'confirmed' }, note: `quantity confirmed as ${i.proposedQuantity}` });
@@ -182,7 +182,8 @@ export default function InventoryPage() {
                     <label htmlFor={`act-${i.id}`} className="sr-only">Proposed action for {i.id}</label>
                     <select
                       id={`act-${i.id}`}
-                      className="field !h-8 !w-[150px] !text-[12.5px]"
+                      className="field !h-8 !w-[150px] !text-[12.5px] disabled:opacity-60"
+                      disabled={!can('items')}
                       value={i.action}
                       onChange={(e) => {
                         const a = e.target.value as Action;

@@ -15,7 +15,7 @@ const SUMMARY: { a: Action; label: string }[] = [
 ];
 
 export default function PlanPage() {
-  const { state, dispatch, roomById } = useInventory();
+  const { state, dispatch, roomById, can } = useInventory();
   const [property, setProperty] = useState('meridian');
   const [noteFor, setNoteFor] = useState<InventoryItem | null>(null);
   const [noteDraft, setNoteDraft] = useState('');
@@ -108,7 +108,7 @@ export default function PlanPage() {
                     return (
                       <li
                         key={i.id}
-                        draggable
+                        draggable={can('items')}
                         onDragStart={(e) => e.dataTransfer.setData('text/plain', i.id)}
                         className="cursor-grab border border-line bg-white p-2.5 text-[12.5px] active:cursor-grabbing"
                       >
@@ -125,10 +125,10 @@ export default function PlanPage() {
                         {i.actionNotes && <p className="mt-2 border-t border-line pt-2 text-[11.5px] text-ink-soft">{i.actionNotes}</p>}
                         <div className="mt-2 flex gap-1">
                           <label htmlFor={`pa-${i.id}`} className="sr-only">Action for {i.id}</label>
-                          <select id={`pa-${i.id}`} className="field !h-7 !px-1.5 !text-[11.5px]" value={i.action} onChange={(e) => assign(i.id, e.target.value as Action)}>
+                          <select id={`pa-${i.id}`} disabled={!can('items')} className="field !h-7 !px-1.5 !text-[11.5px] disabled:opacity-60" value={i.action} onChange={(e) => assign(i.id, e.target.value as Action)}>
                             {ACTIONS.map((x) => <option key={x} value={x}>{ACTION_LABEL[x]}</option>)}
                           </select>
-                          <button className="btn-secondary !h-7 !px-2" aria-label={`Add note to ${i.id}`} title="Add note" onClick={() => openNote(i)}>
+                          <button className="btn-secondary !h-7 !px-2" disabled={!can('items')} aria-label={`Add note to ${i.id}`} title="Add note" onClick={() => openNote(i)}>
                             <StickyNote size={13} />
                           </button>
                         </div>

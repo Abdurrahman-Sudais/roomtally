@@ -10,6 +10,7 @@ import type {
   Property,
   Room,
 } from '../data/types';
+import { DEMO_USERS, can as roleCan, userById, type Action, type AuditEntry, type DemoUser } from '../lib/access';
 
 export interface Settings {
   organisation: string;
@@ -26,6 +27,10 @@ export interface InventoryState {
   duplicateGroups: DuplicateGroup[];
   activity: ActivityEntry[];
   settings: Settings;
+  /** Acting demo user. */
+  userId: string;
+  /** Append-only record of changes made in this browser. */
+  audit: AuditEntry[];
 }
 
 const STORAGE_KEY = 'roomtally.demo.v1';
@@ -42,6 +47,8 @@ export const initialState = (): InventoryState => ({
     { id: 'a0', at: '2026-10-16T16:40:00.000Z', text: 'Survey of Meridian House imported — 3 observations flagged for duplicate review.' },
   ],
   settings: { organisation: 'Halden & Rowe LLP — Facilities', defaultUnit: 'cm', boardIncludesUnconfirmed: false },
+  userId: DEMO_USERS[0]!.id,
+  audit: [],
 });
 
 type Msg =
@@ -52,7 +59,50 @@ type Msg =
   | { type: 'revertDuplicate'; groupId: string }
   | { type: 'saveRoom'; room: Room }
   | { type: 'settings'; patch: Partial<Settings> }
-  | { type: 'reset' };
+  | { type: 'reset' }
+  | { type: 'user'; userId: string }
+  | { type: 'audit'; entry: AuditEntry };
+
+/** Which permission each message needs. View preferences, switching user and resetting this browser are open to everyone. */
+export function permissionFor(msg: Msg): Action | null {
+  switch (msg.type) {
+    case 'saveItem':
+    case 'updateItem':
+      return 'items';
+    case 'deleteItem':
+      return 'delete';
+    case 'resolveDuplicate':
+    case 'revertDuplicate':
+      return 'duplicates';
+    case 'saveRoom':
+      return 'rooms';
+    case 'settings':
+      return Object.keys(msg.patch).every((k) => k === 'boardIncludesUnconfirmed') ? null : 'settings';
+    default:
+      return null;
+  }
+}
+
+function describe(msg: Msg): string {
+  switch (msg.type) {
+    case 'saveItem':
+      return `${msg.item.id}: saved — ${msg.item.description}`;
+    case 'updateItem':
+      return `${msg.id}: ${msg.note ?? 'updated'}`;
+    case 'deleteItem':
+      return `${msg.id}: removed from the inventory`;
+    case 'resolveDuplicate':
+      return `${msg.groupId}: resolved as “${msg.resolution}”`;
+    case 'revertDuplicate':
+      return `${msg.groupId}: decision reversed`;
+    case 'saveRoom':
+      return `Room ${msg.room.code} ${msg.room.name} saved`;
+    case 'settings':
+      return `Settings changed: ${Object.keys(msg.patch).join(', ')}`;
+    default:
+      return msg.type;
+  }
+}
 
 const now = () => new Date().toISOString();
 const log = (state: InventoryState, text: string): ActivityEntry[] =>
@@ -156,7 +206,18 @@ function reducer(state: InventoryState, msg: Msg): InventoryState {
     case 'settings':
       return { ...state, settings: { ...state.settings, ...msg.patch } };
     case 'reset':
-      return initialState();
+      // Reset only clears this browser's demo data; keep the acting user.
+      return { ...initialState(), userId: state.userId };
+    case 'user':
+      return { ...state, userId: msg.userId };
+    case 'audit': {
+      const last = state.audit[state.audit.length - 1];
+      // Typing in a settings field sends one message per keystroke; collapse consecutive identical entries.
+      if (last && last.userId === msg.entry.userId && last.action === msg.entry.action && last.detail === msg.entry.detail && msg.entry.action === 'settings') {
+        return { ...state, audit: [...state.audit.slice(0, -1), { ...last, at: msg.entry.at }] };
+      }
+      return { ...state, audit: [...state.audit, msg.entry] };
+    }
   }
 }
 
@@ -165,7 +226,8 @@ function load(): InventoryState {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as InventoryState;
-      if (parsed.version === VERSION && Array.isArray(parsed.items)) return parsed;
+      if (parsed.version === VERSION && Array.isArray(parsed.items))
+        return { ...parsed, userId: DEMO_USERS.some((u) => u.id === parsed.userId) ? parsed.userId : DEMO_USERS[0]!.id, audit: Array.isArray(parsed.audit) ? parsed.audit : [] };
     }
   } catch {
     /* storage unavailable — fall back to seed data */
@@ -175,7 +237,11 @@ function load(): InventoryState {
 
 interface Ctx {
   state: InventoryState;
-  dispatch: React.Dispatch<Msg>;
+  /** Permission-checked dispatch: refused messages are ignored; permitted changes are written to the audit log. */
+  dispatch: (msg: Msg) => boolean;
+  user: DemoUser;
+  can: (action: Action) => boolean;
+  setUser: (userId: string) => void;
   roomById: (id: string) => Room | undefined;
   propertyById: (id: string) => Property | undefined;
   nextItemId: () => string;
@@ -184,7 +250,20 @@ interface Ctx {
 const InventoryContext = createContext<Ctx | null>(null);
 
 export function InventoryProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, undefined, load);
+  const [state, rawDispatch] = useReducer(reducer, undefined, load);
+  const user = userById(state.userId);
+  const allowed = useCallback((a: Action) => roleCan(user.role, a), [user.role]);
+  const dispatch = useCallback(
+    (msg: Msg) => {
+      const need = permissionFor(msg);
+      if (need && !allowed(need)) return false;
+      rawDispatch(msg);
+      if (need) rawDispatch({ type: 'audit', entry: { id: Math.random().toString(36).slice(2), at: new Date().toISOString(), userId: user.id, action: need, detail: describe(msg) } });
+      return true;
+    },
+    [allowed, user.id],
+  );
+  const setUser = useCallback((userId: string) => rawDispatch({ type: 'user', userId }), []);
 
   useEffect(() => {
     try {
@@ -202,8 +281,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, [state.items]);
 
   const value = useMemo(
-    () => ({ state, dispatch, roomById, propertyById, nextItemId }),
-    [state, roomById, propertyById, nextItemId],
+    () => ({ state, dispatch, user, can: allowed, setUser, roomById, propertyById, nextItemId }),
+    [state, dispatch, user, allowed, setUser, roomById, propertyById, nextItemId],
   );
   return <InventoryContext.Provider value={value}>{children}</InventoryContext.Provider>;
 }
